@@ -38,11 +38,13 @@ static int line_term_len = 0;
 
 const uint8_t robovero[] =
 "\r\n"
-"               ____    __________    ____   ___  __\r\n"
+/*"               ____    __________    ____   ___  __\r\n"
 "              /\r\n"
 "   __________/_________________________  ____   __ \r\n"
 "  /  ) /  ) /  ) /  ) | / /__) /  ) /  )\r\n"
-" /____(__/_(__/_(__/__|/_(____/____(__/___ __  _\r\n"
+" /____(__/_(__/_(__/__|/_(____/____(__/___ __  _\r\n"*/
+"RoboVero Command Line Interface\r\n"
+"Copyright (C) 2011 Gumstix Inc.\r\n"
 "\r\n"
 "\r\n"
 "press enter to begin...\r\n";
