@@ -1,0 +1,17 @@
+This is the source for the firmware that ships with Gumstix RoboVero expansion boards.
+
+Contents
+========
+Makefile	Rules to build firmware
+script.ld	Linker script
+src/		C source files
+src/wrap	Wrapper functions for NXP peripheral driver library
+src/usb		USB device configuration
+lib/		Contains libgcc, libc, and prebuilt peripheral driver library
+include/	Header files
+contrib		Additional files that may be useful
+
+Getting Started
+===============
+Run make from the root directory.
+
