@@ -44,4 +44,6 @@ clean:
 post-build:
 	-arm-bare_newlib_cortex_m3_nommu-eabi-objcopy -O binary firmware firmware.bin
 	-@echo ' '
-
+	-md5sum firmware > md5sum.txt
+	-git log -1 --pretty=oneline > commit-id.txt
+	
