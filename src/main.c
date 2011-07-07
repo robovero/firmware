@@ -1,7 +1,7 @@
 /*******************************************************************************
  * @file
- * @purpose		
- * @version		0.1
+ * @purpose        
+ * @version        0.1
  *------------------------------------------------------------------------------
  * Copyright (C) 2011 Gumstix Inc.
  * All rights reserved.
@@ -13,7 +13,7 @@
  * modification, are permitted provided that the following conditions are met:
  * 
  * Redistributions of source code must retain the above copyright notice, this
- * 	list of conditions and the following disclaimer.
+ *     list of conditions and the following disclaimer.
  * 
  * Redistributions in binary form must reproduce the above copyright notice,
  *  this list of conditions and the following disclaimer in the documentation
@@ -43,18 +43,18 @@
 
 /*****************************************************************************
 
-	Generic Interrupt Service Routine
+    Generic Interrupt Service Routine
 
 *****************************************************************************/
 void IntHandler(void)
 {
-	unsigned long int_num;
+    unsigned long int_num;
 
   /* Get the interrupt number */
-	__asm("mrs %0, ipsr;" : "=r"(int_num) );
+    __asm("mrs %0, ipsr;" : "=r"(int_num) );
 
   /* Disable the interrupt */
-	//ROM_IntDisable(int_num);
+    //ROM_IntDisable(int_num);
 
   /* Send the interrupt signal and number */
   //usprintf(data, "\r\n%d\r\n", int_num);
@@ -87,7 +87,7 @@ void hwInit(void)
 
 void heartbeat(void)
 {
-	unsigned long i;
+    unsigned long i;
 
     for (i = 0; i < 1200000; i++);
     GPIO_ClearValue(3, (1 << 25));
@@ -103,18 +103,18 @@ extern int heartbeat_on;
 
 int main(void)
 {
-	hwInit();
+    hwInit();
 
-	/*
-	 * let usbuser/robovero handle the rest
-	 */
+    /*
+     * let usbuser/robovero handle the rest
+     */
     while (1)
     {
         if (heartbeat_on)
             heartbeat();
     }
 
-	return 0;
+    return 0;
 }
 
 // CAN TEST
@@ -161,12 +161,12 @@ PINSEL_ConfigPin(&PinCfg);*/
 //PinCfg.Pinnum = 1;
 //PINSEL_ConfigPin(&PinCfg);
 
-//	UART_CFG_Type * UARTConfigStruct_ptr;
-//	UARTConfigStruct_ptr = _UART_CFG_Type_malloc();
-//	if (UARTConfigStruct_ptr == NULL)
-//		while (1);
-//	UART_ConfigStructInit(UARTConfigStruct_ptr);
-//	_UART_CFG_Type_set_Baud_rate(UARTConfigStruct_ptr, 115200);
-//	UART_Init(LPC_UART1, UARTConfigStruct_ptr);
-//	UART_TxCmd(LPC_UART1, ENABLE);
+//    UART_CFG_Type * UARTConfigStruct_ptr;
+//    UARTConfigStruct_ptr = _UART_CFG_Type_malloc();
+//    if (UARTConfigStruct_ptr == NULL)
+//        while (1);
+//    UART_ConfigStructInit(UARTConfigStruct_ptr);
+//    _UART_CFG_Type_set_Baud_rate(UARTConfigStruct_ptr, 115200);
+//    UART_Init(LPC_UART1, UARTConfigStruct_ptr);
+//    UART_TxCmd(LPC_UART1, ENABLE);
 
