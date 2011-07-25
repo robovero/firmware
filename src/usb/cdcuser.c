@@ -226,21 +226,21 @@ uint32_t CDC_SetLineCoding (void) {
   CDC_LineCoding.bParityType =  EP0Buf[5];
   CDC_LineCoding.bDataBits   =  EP0Buf[6];
 
-#if PORT_NUM
-  ser_ClosePort(1);
-  ser_OpenPort (1);
-  ser_InitPort1 (CDC_LineCoding.dwDTERate,
-                CDC_LineCoding.bDataBits,
-                CDC_LineCoding.bParityType,
-                CDC_LineCoding.bCharFormat);
-#else
-  ser_ClosePort(0);
-  ser_OpenPort (0);
-  ser_InitPort0 (CDC_LineCoding.dwDTERate,
-                CDC_LineCoding.bDataBits,
-                CDC_LineCoding.bParityType,
-                CDC_LineCoding.bCharFormat);
-#endif
+//#if PORT_NUM
+//  ser_ClosePort(1);
+//  ser_OpenPort (1);
+// ser_InitPort1 (CDC_LineCoding.dwDTERate,
+//                CDC_LineCoding.bDataBits,
+//                CDC_LineCoding.bParityType,
+//                CDC_LineCoding.bCharFormat);
+//#else
+//  ser_ClosePort(0);
+//  ser_OpenPort (0);
+//  ser_InitPort0 (CDC_LineCoding.dwDTERate,
+//                CDC_LineCoding.bDataBits,
+//                CDC_LineCoding.bParityType,
+//                CDC_LineCoding.bCharFormat);
+//#endif
   return (TRUE);
 }
 
