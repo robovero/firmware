@@ -35,6 +35,8 @@
 #ifndef __EXTRAS_H__
 #define __EXTRAS_H__
 
+#include "lpc_types.h"
+
 extern int prompt_on;
 extern int heartbeat_on;
 
@@ -45,6 +47,7 @@ int _promptOn(uint8_t * args);
 int _promptOff(uint8_t * args);
 int _heartbeatOn(uint8_t * args);
 int _heartbeatOff(uint8_t * args);
+int _initMatch(uint8_t * args);
 int _malloc(uint8_t * args);
 int _free(uint8_t * args);
 int _deref(uint8_t * args);

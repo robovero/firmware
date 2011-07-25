@@ -41,6 +41,7 @@
 #include "lpc17xx_i2c.h"
 #include "lpc17xx_uart.h"
 #include "lpc17xx_can.h"
+#include "lpc17xx_pwm.h"
 
 /*
  * global variables used by wrapper functions and extras
@@ -174,6 +175,35 @@ int _heartbeatOn(uint8_t * args)
 int _heartbeatOff(uint8_t * args)
 {
     heartbeat_on = FALSE;
+    return 0;
+}
+
+/*
+ * Setup a match condition for count cycles on channel ch.
+ */
+int _initMatch(uint8_t * args)
+{
+    uint8_t * arg_ptr;
+    uint8_t MatchChannel; 
+    uint32_t MatchValue;
+    PWM_MATCHCFG_Type PWMMatchCfgDat;
+
+    if ((arg_ptr = (uint8_t *) strtok(NULL, " ")) == NULL) return 1;
+    MatchChannel = (uint8_t) strtoul((char *) arg_ptr, NULL, 16);
+    if ((arg_ptr = (uint8_t *) strtok(NULL, " ")) == NULL) return 1;
+    MatchValue = (uint32_t) strtoul((char *) arg_ptr, NULL, 16);
+
+
+    PWM_MatchUpdate(LPC_PWM1, MatchChannel, MatchValue, PWM_MATCH_UPDATE_NOW);
+    PWMMatchCfgDat.IntOnMatch = DISABLE;
+    PWMMatchCfgDat.MatchChannel = MatchChannel;
+    if (!MatchChannel)
+        PWMMatchCfgDat.ResetOnMatch = ENABLE;
+    else
+        PWMMatchCfgDat.ResetOnMatch = DISABLE;
+    PWMMatchCfgDat.StopOnMatch = DISABLE;
+    PWM_ConfigMatch(LPC_PWM1, &PWMMatchCfgDat);
+
     return 0;
 }
 
@@ -337,6 +367,7 @@ int _roboveroConfig(uint8_t * args)
 {
     int i;
     UART_CFG_Type UARTConfigStruct;
+    PWM_TIMERCFG_Type PWMCfgDat;
 
     configAllPins();
 
@@ -367,6 +398,15 @@ int _roboveroConfig(uint8_t * args)
     UARTConfigStruct.Baud_rate = 115200;
     UART_Init(LPC_UART1, &UARTConfigStruct);
     UART_TxCmd(LPC_UART1, ENABLE);
+
+    /*
+     * Initialize PWM
+     *
+     * Peripheral clock is 30MHz. Prescale by 30 cycles for 1us resolution.
+     */    
+    PWMCfgDat.PrescaleOption = PWM_TIMER_PRESCALE_TICKVAL;
+    PWMCfgDat.PrescaleValue = 30;
+    PWM_Init(LPC_PWM1, PWM_MODE_TIMER, &PWMCfgDat);
 
     return 0;
 }
