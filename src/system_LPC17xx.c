@@ -22,315 +22,29 @@
  *
  ******************************************************************************/
 
-
 #include <stdint.h>
 #include "LPC17xx.h"
 
 
-/** @addtogroup LPC17xx_System
- * @{
- */
-
 /*
-//-------- <<< Use Configuration Wizard in Context Menu >>> ------------------
-*/
-
-/*--------------------- Clock Configuration ----------------------------------
-//
-// <e> Clock Configuration
-//   <h> System Controls and Status Register (SCS)
-//     <o1.4>    OSCRANGE: Main Oscillator Range Select
-//                     <0=>  1 MHz to 20 MHz
-//                     <1=> 15 MHz to 24 MHz
-//     <e1.5>       OSCEN: Main Oscillator Enable
-//     </e>
-//   </h>
-//
-//   <h> Clock Source Select Register (CLKSRCSEL)
-//     <o2.0..1>   CLKSRC: PLL Clock Source Selection
-//                     <0=> Internal RC oscillator
-//                     <1=> Main oscillator
-//                     <2=> RTC oscillator
-//   </h>
-//
-//   <e3> PLL0 Configuration (Main PLL)
-//     <h> PLL0 Configuration Register (PLL0CFG)
-//                     <i> F_cco0 = (2 * M * F_in) / N
-//                     <i> F_in must be in the range of 32 kHz to 50 MHz
-//                     <i> F_cco0 must be in the range of 275 MHz to 550 MHz
-//       <o4.0..14>  MSEL: PLL Multiplier Selection
-//                     <6-32768><#-1>
-//                     <i> M Value
-//       <o4.16..23> NSEL: PLL Divider Selection
-//                     <1-256><#-1>
-//                     <i> N Value
-//     </h>
-//   </e>
-//
-//   <e5> PLL1 Configuration (USB PLL)
-//     <h> PLL1 Configuration Register (PLL1CFG)
-//                     <i> F_usb = M * F_osc or F_usb = F_cco1 / (2 * P)
-//                     <i> F_cco1 = F_osc * M * 2 * P
-//                     <i> F_cco1 must be in the range of 156 MHz to 320 MHz
-//       <o6.0..4>   MSEL: PLL Multiplier Selection
-//                     <1-32><#-1>
-//                     <i> M Value (for USB maximum value is 4)
-//       <o6.5..6>   PSEL: PLL Divider Selection
-//                     <0=> 1
-//                     <1=> 2
-//                     <2=> 4
-//                     <3=> 8
-//                     <i> P Value
-//     </h>
-//   </e>
-//
-//   <h> CPU Clock Configuration Register (CCLKCFG)
-//     <o7.0..7>  CCLKSEL: Divide Value for CPU Clock from PLL0
-//                     <3-256><#-1>
-//   </h>
-//
-//   <h> USB Clock Configuration Register (USBCLKCFG)
-//     <o8.0..3>   USBSEL: Divide Value for USB Clock from PLL0
-//                     <0-15>
-//                     <i> Divide is USBSEL + 1
-//   </h>
-//
-//   <h> Peripheral Clock Selection Register 0 (PCLKSEL0)
-//     <o9.0..1>    PCLK_WDT: Peripheral Clock Selection for WDT
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.2..3>    PCLK_TIMER0: Peripheral Clock Selection for TIMER0
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.4..5>    PCLK_TIMER1: Peripheral Clock Selection for TIMER1
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.6..7>    PCLK_UART0: Peripheral Clock Selection for UART0
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.8..9>    PCLK_UART1: Peripheral Clock Selection for UART1
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.12..13>  PCLK_PWM1: Peripheral Clock Selection for PWM1
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.14..15>  PCLK_I2C0: Peripheral Clock Selection for I2C0
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.16..17>  PCLK_SPI: Peripheral Clock Selection for SPI
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.20..21>  PCLK_SSP1: Peripheral Clock Selection for SSP1
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.22..23>  PCLK_DAC: Peripheral Clock Selection for DAC
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.24..25>  PCLK_ADC: Peripheral Clock Selection for ADC
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o9.26..27>  PCLK_CAN1: Peripheral Clock Selection for CAN1
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 6
-//     <o9.28..29>  PCLK_CAN2: Peripheral Clock Selection for CAN2
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 6
-//     <o9.30..31>  PCLK_ACF: Peripheral Clock Selection for ACF
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 6
-//   </h>
-//
-//   <h> Peripheral Clock Selection Register 1 (PCLKSEL1)
-//     <o10.0..1>   PCLK_QEI: Peripheral Clock Selection for the Quadrature Encoder Interface
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.2..3>   PCLK_GPIO: Peripheral Clock Selection for GPIOs
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.4..5>   PCLK_PCB: Peripheral Clock Selection for the Pin Connect Block
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.6..7>   PCLK_I2C1: Peripheral Clock Selection for I2C1
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.10..11> PCLK_SSP0: Peripheral Clock Selection for SSP0
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.12..13> PCLK_TIMER2: Peripheral Clock Selection for TIMER2
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.14..15> PCLK_TIMER3: Peripheral Clock Selection for TIMER3
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.16..17> PCLK_UART2: Peripheral Clock Selection for UART2
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.18..19> PCLK_UART3: Peripheral Clock Selection for UART3
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.20..21> PCLK_I2C2: Peripheral Clock Selection for I2C2
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.22..23> PCLK_I2S: Peripheral Clock Selection for I2S
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.26..27> PCLK_RIT: Peripheral Clock Selection for the Repetitive Interrupt Timer
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.28..29> PCLK_SYSCON: Peripheral Clock Selection for the System Control Block
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//     <o10.30..31> PCLK_MC: Peripheral Clock Selection for the Motor Control PWM
-//                     <0=> Pclk = Cclk / 4
-//                     <1=> Pclk = Cclk
-//                     <2=> Pclk = Cclk / 2
-//                     <3=> Pclk = Hclk / 8
-//   </h>
-//
-//   <h> Power Control for Peripherals Register (PCONP)
-//     <o11.1>      PCTIM0: Timer/Counter 0 power/clock enable
-//     <o11.2>      PCTIM1: Timer/Counter 1 power/clock enable
-//     <o11.3>      PCUART0: UART 0 power/clock enable
-//     <o11.4>      PCUART1: UART 1 power/clock enable
-//     <o11.6>      PCPWM1: PWM 1 power/clock enable
-//     <o11.7>      PCI2C0: I2C interface 0 power/clock enable
-//     <o11.8>      PCSPI: SPI interface power/clock enable
-//     <o11.9>      PCRTC: RTC power/clock enable
-//     <o11.10>     PCSSP1: SSP interface 1 power/clock enable
-//     <o11.12>     PCAD: A/D converter power/clock enable
-//     <o11.13>     PCCAN1: CAN controller 1 power/clock enable
-//     <o11.14>     PCCAN2: CAN controller 2 power/clock enable
-//     <o11.15>     PCGPIO: GPIOs power/clock enable
-//     <o11.16>     PCRIT: Repetitive interrupt timer power/clock enable
-//     <o11.17>     PCMC: Motor control PWM power/clock enable
-//     <o11.18>     PCQEI: Quadrature encoder interface power/clock enable
-//     <o11.19>     PCI2C1: I2C interface 1 power/clock enable
-//     <o11.21>     PCSSP0: SSP interface 0 power/clock enable
-//     <o11.22>     PCTIM2: Timer 2 power/clock enable
-//     <o11.23>     PCTIM3: Timer 3 power/clock enable
-//     <o11.24>     PCUART2: UART 2 power/clock enable
-//     <o11.25>     PCUART3: UART 3 power/clock enable
-//     <o11.26>     PCI2C2: I2C interface 2 power/clock enable
-//     <o11.27>     PCI2S: I2S interface power/clock enable
-//     <o11.29>     PCGPDMA: GP DMA function power/clock enable
-//     <o11.30>     PCENET: Ethernet block power/clock enable
-//     <o11.31>     PCUSB: USB interface power/clock enable
-//   </h>
-//
-//   <h> Clock Output Configuration Register (CLKOUTCFG)
-//     <o12.0..3>   CLKOUTSEL: Selects clock source for CLKOUT
-//                     <0=> CPU clock
-//                     <1=> Main oscillator
-//                     <2=> Internal RC oscillator
-//                     <3=> USB clock
-//                     <4=> RTC oscillator
-//     <o12.4..7>   CLKOUTDIV: Selects clock divider for CLKOUT
-//                     <1-16><#-1>
-//     <o12.8>      CLKOUT_EN: CLKOUT enable control
-//   </h>
-//
-// </e>
-*/
-
-
-
-/** @addtogroup LPC17xx_System_Defines  LPC17xx System Defines
-  @{
+ * Clock Configuration
  */
-
 #define CLOCK_SETUP           1
-#define SCS_Val               0x00000020
-//#define SCS_Val               0x00000030	/* 24MHz */
-#define CLKSRCSEL_Val         0x00000001
+#define SCS_Val               0x00000020    /* Enable main 12MHz osc.         */
+#define CLKSRCSEL_Val         0x00000001    /* Clock source is main osc.      */
 #define PLL0_SETUP            1
-#define PLL0CFG_Val           0x00050063	/* 12MHz */
-//#define PLL0CFG_Val           0x00070063	/* 16MHz */
-//#define PLL0CFG_Val           0x000B0063	/* 24MHz */
+#define PLL0CFG_Val           0x0000000E    /* Fcco = 12*15*2 = 360MHz  */
 #define PLL1_SETUP            1
-#define PLL1CFG_Val           0x00000023	/* 12MHz */
-//#define PLL1CFG_Val           0x00000022	/* 16MHz */
-//#define PLL1CFG_Val           0x00000011	/* 24MHz */
-#define CCLKCFG_Val           0x00000003
-#define USBCLKCFG_Val         0x00000000
-#define PCLKSEL0_Val          0x00000000
-#define PCLKSEL1_Val          0x00000000
+#define PLL1CFG_Val           0x00000023    /* USB PLL */
+#define CCLKCFG_Val           0x00000002    /* CPU clock = 360/3 = 120 MHz    */
+#define USBCLKCFG_Val         0x00000000    /* Not used since PLL1 is enabled */
+#define PCLKSEL0_Val          0x00000000    /* All peripheral clocks operate  */
+#define PCLKSEL1_Val          0x00000000    /* at 30MHz                       */
 #define PCONP_Val             0x042887DE
-#define CLKOUTCFG_Val         0x00000000
-//#define CLKOUTCFG_Val         0x00000103
+#define CLKOUTCFG_Val         0x00000130    /* Enable CCLK/4 out              */
 
-/*--------------------- Flash Accelerator Configuration ----------------------
-//
-// <e> Flash Accelerator Configuration
-//   <o1.0..11>  Reserved
-//   <o1.12..15> FLASHTIM: Flash Access Time
-//               <0=> 1 CPU clock (for CPU clock up to 20 MHz)
-//               <1=> 2 CPU clocks (for CPU clock up to 40 MHz)
-//               <2=> 3 CPU clocks (for CPU clock up to 60 MHz)
-//               <3=> 4 CPU clocks (for CPU clock up to 80 MHz)
-//               <4=> 5 CPU clocks (for CPU clock up to 100 MHz)
-//               <5=> 6 CPU clocks (for any CPU clock)
-// </e>
-*/
-#define FLASH_SETUP           1
-#define FLASHCFG_Val          0x0000303A
+#define FLASHCFG_Val          0x0000403A    /* Flash access time 5 CPU cycles */
 
-/*
-//-------- <<< end of configuration section >>> ------------------------------
-*/
 
 /*----------------------------------------------------------------------------
   Check the register settings
@@ -355,9 +69,9 @@
    #error "PLL1CFG: Invalid values of reserved bits!"
 #endif
 
-#if ((CCLKCFG_Val != 0) && (((CCLKCFG_Val - 1) % 2)))
-   #error "CCLKCFG: CCLKSEL field does not contain only odd values or 0!"
-#endif
+//#if ((CCLKCFG_Val != 0) && (((CCLKCFG_Val - 1) % 2)))
+//   #error "CCLKCFG: CCLKSEL field does not contain only odd values or 0!"
+//#endif
 
 #if (CHECK_RSVD((USBCLKCFG_Val), ~0x0000000F))
    #error "USBCLKCFG: Invalid values of reserved bits!"
@@ -392,8 +106,8 @@
 /*----------------------------------------------------------------------------
   Define clocks
  *----------------------------------------------------------------------------*/
-//#define XTAL        (12000000UL)        /* Oscillator frequency               */
-#define XTAL        (16000000UL)        /* Oscillator frequency               */
+#define XTAL        (12000000UL)        /* Oscillator frequency               */
+//#define XTAL        (16000000UL)        /* Oscillator frequency               */
 //#define XTAL        (24000000UL)        /* Oscillator frequency               */
 #define OSC_CLK     (      XTAL)        /* Main oscillator frequency          */
 #define RTC_CLK     (   32768UL)        /* RTC oscillator frequency           */
