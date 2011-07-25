@@ -48,18 +48,25 @@
 *****************************************************************************/
 void IntHandler(void)
 {
-    unsigned long int_num;
+    unsigned int int_num;
+    uint8_t int_str[8];
 
-  /* Get the interrupt number */
+    /*
+     * Get the interrupt number
+     */
     __asm("mrs %0, ipsr;" : "=r"(int_num) );
+    int_num -= 16;
 
-  /* Disable the interrupt */
-    //ROM_IntDisable(int_num);
+    /*
+     * Disable the interrupt
+     */
+    NVIC_DisableIRQ(int_num);
 
-  /* Send the interrupt signal and number */
-  //usprintf(data, "\r\n%d\r\n", int_num);
-  //USBBufferWrite(&g_sTxBuffer, data, strlen(data));
-
+    /*   
+     * Send the interrupt signal and number
+     */
+    sprintf((char*) int_str, "\r\n%x\r\n", int_num);
+    writeUSBOutString(int_str);
 }
 
 /*****************************************************************************
@@ -105,6 +112,7 @@ int main(void)
 {
     hwInit();
 
+
     /*
      * let usbuser/robovero handle the rest
      */
@@ -143,6 +151,7 @@ while (1) {
 
 // MASTER CLOCK TEST
 /*//Initialize clockout pin
+PINSEL_CFG_Type PinCfg;
 PinCfg.Portnum = 1;
 PinCfg.Pinnum = 27;
 PinCfg.Pinmode = 0;

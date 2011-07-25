@@ -48,6 +48,7 @@ const _nxp_function driver_table[] = {
     {(uint8_t *) "promptOff", _promptOff},
     {(uint8_t *) "heartbeatOn", _heartbeatOn},
     {(uint8_t *) "heartbeatOff", _heartbeatOff},
+    {(uint8_t *) "initMatch", _initMatch},
     {(uint8_t *) "malloc", _malloc},
     {(uint8_t *) "free", _free},
     {(uint8_t *) "deref", _deref},
@@ -1236,6 +1237,9 @@ const _nxp_function driver_table[] = {
     {(uint8_t *) "LPC_TIM_TypeDef_EMR", _LPC_TIM_TypeDef_EMR},
     {(uint8_t *) "LPC_TIM_TypeDef_CTCR", _LPC_TIM_TypeDef_CTCR},
     {(uint8_t *) "IRQn_Type_malloc", _IRQn_Type_malloc},
+    {(uint8_t *) "NVIC_EnableIRQ", _NVIC_EnableIRQ},
+    {(uint8_t *) "NVIC_ClearPendingIRQ", _NVIC_ClearPendingIRQ},
+
 };
 
 int driver_table_len = sizeof(driver_table)/sizeof(_nxp_function);

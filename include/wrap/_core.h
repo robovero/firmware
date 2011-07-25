@@ -32,45 +32,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
 
-#ifndef __TABLE_H__
-#define __TABLE_H__
+#ifndef ___CORE_H__
+#define ___CORE_H__
 
-#include "extras.h"
-#include "_lpc17xx_pwm.h"
-#include "_lpc17xx_spi.h"
-#include "_lpc17xx_rtc.h"
-#include "_lpc17xx_rit.h"
-#include "_lpc17xx_ssp.h"
-#include "_lpc17xx_i2c.h"
-#include "_lpc17xx_can.h"
-#include "_lpc17xx_exti.h"
-#include "_lpc17xx_systick.h"
-#include "_debug_frmwrk.h"
-#include "_lpc17xx_i2s.h"
-#include "_lpc17xx_emac.h"
-#include "_lpc17xx_adc.h"
-#include "_lpc17xx_mcpwm.h"
-#include "_lpc17xx_clkpwr.h"
-#include "_lpc17xx_dac.h"
-#include "_lpc17xx_wdt.h"
-#include "_lpc17xx_libcfg.h"
-#include "_lpc17xx_timer.h"
-#include "_lpc17xx_gpdma.h"
-#include "_lpc17xx_qei.h"
-#include "_lpc17xx_uart.h"
-#include "_lpc17xx_gpio.h"
-#include "_lpc17xx_pinsel.h"
-#include "_lpc17xx_nvic.h"
-#include "_LPC17xx.h"
-#include "_core.h"
+#include "lpc_types.h"
 
-typedef struct {
-        uint8_t * fcn_name;
-        int (*fcn_ptr)(uint8_t *);
-} _nxp_function;
-
-extern const _nxp_function driver_table[];
-extern int driver_table_len;
+int _NVIC_EnableIRQ(uint8_t * args);
+int _NVIC_ClearPendingIRQ(uint8_t * args);
 
 #endif
-
