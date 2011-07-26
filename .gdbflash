@@ -1,0 +1,4 @@
+load
+monitor reset run
+set confirm off
+quit

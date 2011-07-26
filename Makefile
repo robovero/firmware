@@ -47,3 +47,6 @@ post-build:
 	-md5sum firmware > md5sum.txt
 	-git log -1 --pretty=oneline > commit-id.txt
 	
+flash:
+	-make
+	-./flash.py
