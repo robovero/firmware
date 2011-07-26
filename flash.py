@@ -5,7 +5,21 @@ import os, subprocess, sys, time, os, platform, json
 arch = platform.machine()
 debug = open("debug.log", "w")
 ESC = chr(27)
-config = json.load(open("flashconfig"))
+
+try:
+	config_file = open("flashconfig")
+except:
+	exit("\n"
+	"ERROR: flashconfig not found. try:\n"
+	"  $ cp flashconfig.sample flashconfig\n"
+	"  set OPENOCD_PATH and GDB_PATH in flashconfig and retry.\n")
+
+try:
+	config = json.load(config_file)
+except:
+	exit("\n"
+	"ERROR: invalid flashconfig")
+
 
 print "getting sudo password"
 sudo_cmd = "sudo echo".split()
