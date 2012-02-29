@@ -71,11 +71,9 @@ const uint8_t USB_ConfigDescriptor[] = {
 		0x0013							+		/* CDC functions */
 		1*USB_ENDPOINT_DESC_SIZE		+		/* interrupt endpoint */
 		1*USB_INTERFACE_DESC_SIZE		+		/* data interface */
-		2*USB_ENDPOINT_DESC_SIZE    	+		/* bulk endpoints */
-		1*USB_INTERFACE_DESC_SIZE		+		/* data interface */
-		2*USB_ENDPOINT_DESC_SIZE				/* bulk endpoints */
+		2*USB_ENDPOINT_DESC_SIZE    			/* bulk endpoints */
 		),
-	0x03,								/* bNumInterfaces */
+  0x02,               /* bNumInterfaces */
 	0x01,								/* bConfigurationValue: 0x01 is used to select this configuration */
 	0x00,								/* iConfiguration: no string to describe this configuration */
 	USB_CONFIG_SELF_POWERED,			/* bmAttributes */
