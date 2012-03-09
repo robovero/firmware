@@ -43,6 +43,7 @@ innerloop:
 	ldr i_y,[pi_y],#4
 	subs i_VectorLen,i_VectorLen,#1
 	mul i_y,i_x,i_y
+  str i_y,[pi_z],#4
 	bne innerloop
 
 	pop {i_x,i_y}
@@ -59,6 +60,7 @@ innerloop16:
 	ldr i_y,[pi_y],#4
 	subs i_VectorLen,i_VectorLen,#1
 	mul i_y,i_x,i_y
+  str i_y,[pi_z],#4
 	bne innerloop16
 
 	pop {i_x,i_y}

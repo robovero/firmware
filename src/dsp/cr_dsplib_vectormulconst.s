@@ -32,9 +32,9 @@
 #define i_Acc 		r4
 
 	.thumb_func
-	.global iF_dspl_vectmulconst32
+	.global vF_dspl_vectmulconst32
 
-iF_dspl_vectmulconst32:
+vF_dspl_vectmulconst32:
 	push {r4}
 
 innerloop:
@@ -52,9 +52,9 @@ innerloop:
 #define si_c 		r2
 
 	.thumb_func
-	.global iF_dspl_vectmulconst16
+	.global vF_dspl_vectmulconst16
 
-iF_dspl_vectmulconst16:
+vF_dspl_vectmulconst16:
 	push {r4}
 
 innerloop16:

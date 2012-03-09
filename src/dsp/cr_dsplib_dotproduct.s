@@ -22,25 +22,37 @@
  * warranty that such application will be suitable for the specified
  * use without further testing or modification.
  *****************************************************************************/
+#define pi_x 		r0
+#define pi_y 		r1
+#define i_VectorLen 		r2
+#define i_Acc 		r3
+#define i_x 		r4
+#define i_y 		r5
+
 	.syntax unified
 	.thumb
+
 	.thumb_func
   .global iF_dspl_dotproduct32
 
 iF_dspl_dotproduct32:
-	push {r4,r5}
+	push {i_x,i_y}
+	mov i_Acc,#0
 
 innerloop:
-	ldr r4,[r0],#4
-	ldr r5,[r1],#4
-	mla r3,r4,r5,r3
-	subs r2,r2,#1
-	bne innerloop
-	pop {r4,r5}
-	bx lr
+	ldr i_x,[pi_x],#4
+	ldr i_y,[pi_y],#4
+  mul i_x,i_x,i_y
+  add i_Acc,i_x,i_Acc
+  subs i_VectorLen,i_VectorLen,#1
+  bne innerloop
+
+  mov r0,i_Acc	//return value
+  pop {i_x,i_y}
+  bx lr
 
 	.end
-	
+
 /*****************************************************************************
  **                            End Of File
  *****************************************************************************/	

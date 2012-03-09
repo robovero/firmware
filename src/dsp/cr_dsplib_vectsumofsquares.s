@@ -39,10 +39,11 @@ iF_dspl_vectsumofsquares32:
 innerloop:
 	ldr i_x,[pi_x],#4
 	subs i_VectorLen,i_VectorLen,#1
-	mla i_Acc,i_x,i_x,i_Acc
+  mul i_x,i_x,i_x
+  add i_Acc,i_x,i_Acc
 	bne innerloop
 
-	mov r0,i_Acc	//return value			
+	mov r0,i_Acc	//return value
 	bx lr
 
 	.thumb_func
@@ -54,8 +55,9 @@ iF_dspl_vectsumofsquares16:
 innerloop16:
 	ldrsh i_x,[pi_x],#4
 	subs i_VectorLen,i_VectorLen,#1
-	mla i_Acc,i_x,i_x,i_Acc
-	bne innerloop16
+  mul i_x,i_x,i_x
+  add i_Acc,i_x,i_Acc
+  bne innerloop16
 
 	mov r0,i_Acc	//return value			
 	bx lr

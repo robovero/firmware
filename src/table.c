@@ -8,6 +8,7 @@
  *
  * Contributer(s):
  *   Neil MacMunn   <neil@gumstix.com>
+ *   Danny Chan     <danny@gumstix.com>
  *------------------------------------------------------------------------------
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -1261,6 +1262,27 @@ const _nxp_function driver_table[] = {
     {(uint8_t *) "vF_dspl_fftR4b16N256", _vF_dspl_fftR4b16N256},
     {(uint8_t *) "vF_dspl_fftR4b16N1024", _vF_dspl_fftR4b16N1024},
     {(uint8_t *) "vF_dspl_fftR4b16N4096", _vF_dspl_fftR4b16N4096},
+    {(uint8_t *) "tS_ResonatorStateCoeff_malloc", _tS_ResonatorStateCoeff_malloc},
+    {(uint8_t *) "tS_ResonatorStateCoeff_i_Coeff_a1", _tS_ResonatorStateCoeff_i_Coeff_a1},
+    {(uint8_t *) "tS_ResonatorStateCoeff_i_yn_1", _tS_ResonatorStateCoeff_i_yn_1},
+    {(uint8_t *) "tS_ResonatorStateCoeff_i_yn_2", _tS_ResonatorStateCoeff_i_yn_2},
+    {(uint8_t *) "tS_blockfir32_Coeff_malloc", _tS_blockfir32_Coeff_malloc},
+    {(uint8_t *) "tS_blockfir32_Coeff_pi_Coeff", _tS_blockfir32_Coeff_pi_Coeff},
+    {(uint8_t *) "tS_blockfir32_Coeff_NTaps", _tS_blockfir32_Coeff_NTaps},
+    {(uint8_t *) "tS_biquad32_StateCoeff_malloc", _tS_biquad32_StateCoeff_malloc},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_Coeff0", _tS_biquad32_StateCoeff_pi_Coeff0},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_Coeff1", _tS_biquad32_StateCoeff_pi_Coeff1},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_Coeff2", _tS_biquad32_StateCoeff_pi_Coeff2},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_Coeff3", _tS_biquad32_StateCoeff_pi_Coeff3},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_Coeff4", _tS_biquad32_StateCoeff_pi_Coeff4},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_State0", _tS_biquad32_StateCoeff_pi_State0},
+    {(uint8_t *) "tS_biquad32_StateCoeff_pi_State1", _tS_biquad32_StateCoeff_pi_State1},
+    {(uint8_t *) "tS_pid_Coeff_malloc", _tS_pid_Coeff_malloc},
+    {(uint8_t *) "tS_pid_Coeff_Kp", _tS_pid_Coeff_Kp},
+    {(uint8_t *) "tS_pid_Coeff_Ki", _tS_pid_Coeff_Ki},
+    {(uint8_t *) "tS_pid_Coeff_Kd", _tS_pid_Coeff_Kd},
+    {(uint8_t *) "tS_pid_Coeff_IntegratedError", _tS_pid_Coeff_IntegratedError},
+    {(uint8_t *) "tS_pid_Coeff_LastError", _tS_pid_Coeff_LastError},
 
 };
 

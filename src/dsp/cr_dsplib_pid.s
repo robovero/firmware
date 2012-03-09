@@ -52,13 +52,15 @@ vF_dspl_pid:
 	ldrsh LastError,[pS_StateCoeff,#8]
 	strh si_Error,[pS_StateCoeff,#8]
 	
-	mla Acc,Kp,si_Error,Acc			//add in proportional part
+  mla Acc,Kp,si_Error,Acc			//add in proportional part
 	
-	sub Temp,si_Error,LastError
-	mla Acc,Kd,Temp,Acc			//add in the difference part
+	sub Temp,LastError,si_Error
 	
-	mov Acc,Acc,ASR#16			//scale down to short int
-	pop {r4-r7}
+  mla Acc,Kd,Temp,Acc			//add in the difference part
+	
+	//mov r0,Acc,ASR#16			//scale down to short int
+	mov r0,Acc
+  pop {r4-r7}
 	bx lr
 
 	.end
