@@ -63,6 +63,7 @@
 #include "_lpc17xx_nvic.h"
 #include "_LPC17xx.h"
 #include "_core.h"
+#include "_cr_dsplib.h"
 
 typedef struct {
         uint8_t * fcn_name;
