@@ -13,5 +13,5 @@ contrib		Additional files that may be useful
 
 Getting Started
 ===============
-Run make from the root directory.
+Run make flash from the root directory once OpenOCD and gdb are installed. Visit http://robovero.org/index.php/tutorials/firmware for details and http://robovero.org/index.php/tutorials/toolchain for installing OpenOCD and gdb.
 
