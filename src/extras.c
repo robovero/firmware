@@ -50,6 +50,8 @@
 int prompt_on = TRUE;
 int heartbeat_on = TRUE;
 
+uint8_t accel_ctrl_reg_1_a_value = 0;
+uint8_t gyro_ctrl_reg_1_value    = 0;
 
 /*
  * Get the return status of the previously called function
@@ -472,4 +474,581 @@ int _resetConfig(uint8_t * args)
     return 0;
 }
 
+static int WriteStI2CRegister (I2C_M_SETUP_Type* setup, uint8_t register_address, uint8_t value)
+{
+    uint8_t transmit_buffer[2];
+    int     result;
+    uint8_t receive_buffer;
+
+    transmit_buffer[0] = register_address;
+    transmit_buffer[1] = value;
+
+    setup->tx_data   = transmit_buffer;
+    setup->tx_length = 2;
+    setup->rx_data   = &receive_buffer;
+    setup->rx_length = 0;
+
+    result = I2C_MasterTransferData(LPC_I2C0, setup, I2C_TRANSFER_POLLING);
+    if(result == ERROR)
+        return 1;
+
+    setup->tx_length = 1;
+    setup->rx_length = 1;
+
+    result = I2C_MasterTransferData(LPC_I2C0, setup, I2C_TRANSFER_POLLING);
+    if(result == ERROR || receive_buffer != value)
+        return 1;
+
+    return 0;
+}
+
+#define MAX_ST_I2C_RETRANSMISSIONS   3
+#define ST_I2C_AUTOINCREMENT_ADDRESS 0x80
+
+#define ACCEL_I2C_SLAVE_ADDRESS    0x18
+#define ACCEL_CTRL_REG_1_A_ADDRESS 0x20
+#define ACCEL_CTRL_REG_4_A_ADDRESS 0x23
+#define ACCEL_DATA_ADDRESS         0x28
+
+#define ACCEL_CTRL_REG_X_ENABLE 0x01
+#define ACCEL_CTRL_REG_Y_ENABLE 0x02
+#define ACCEL_CTRL_REG_Z_ENABLE 0x04
+
+#define ACCEL_CTRL_REG_OUTPUT_HZ_50   0x00
+#define ACCEL_CTRL_REG_OUTPUT_HZ_100  0x08
+#define ACCEL_CTRL_REG_OUTPUT_HZ_400  0x10
+#define ACCEL_CTRL_REG_OUTPUT_HZ_1000 0x18
+
+#define ACCEL_CTRL_REG_POWER_ON 0x20
+
+#define ACCEL_CTRL_REG_BLOCK_UPDATE 0x80
+
+#define ACCEL_CTRL_REG_SCALE_2 0x00
+#define ACCEL_CTRL_REG_SCALE_4 0x10
+#define ACCEL_CTRL_REG_SCALE_8 0x30
+
+#define ACCEL_VALUE_OFFSET 32768
+
+int _configAccel (uint8_t* args)
+{
+    uint32_t         arguments[6];
+    I2C_M_SETUP_Type setup;
+    char*            arg_ptr;
+    unsigned int     index;
+    Status           result;
+    uint8_t          ctrl_reg_1_a_value;
+    uint8_t          ctrl_reg_4_a_value;
+
+    for(index = 0; index < 6; index++)
+    {
+        arg_ptr = strtok(NULL, " ");
+        if(arg_ptr == NULL)
+            return 1;
+
+        arguments[index] = strtoul(arg_ptr, NULL, 16);
+    }
+
+    ctrl_reg_1_a_value = 0;
+
+    if(arguments[0] == 1)
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_POWER_ON;
+
+    if(arguments[1] == 1)
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_X_ENABLE;
+    if(arguments[2] == 1)
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_Y_ENABLE;
+    if(arguments[3] == 1)
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_Z_ENABLE;
+
+    switch(arguments[4])
+    {
+    case 50:
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_OUTPUT_HZ_50;
+        break;
+
+    case 100:
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_OUTPUT_HZ_100;
+        break;
+
+    case 400:
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_OUTPUT_HZ_400;
+        break;
+
+    case 1000:
+        ctrl_reg_1_a_value |= ACCEL_CTRL_REG_OUTPUT_HZ_1000;
+        break;
+
+    default:
+        return 1;
+    }
+
+    ctrl_reg_4_a_value = ACCEL_CTRL_REG_BLOCK_UPDATE;
+
+    switch(arguments[5])
+    {
+    case 2:
+        ctrl_reg_4_a_value |= ACCEL_CTRL_REG_SCALE_2;
+        break;
+
+    case 4:
+        ctrl_reg_4_a_value |= ACCEL_CTRL_REG_SCALE_4;
+        break;
+
+    case 8:
+        ctrl_reg_4_a_value |= ACCEL_CTRL_REG_SCALE_8;
+        break;
+
+    default:
+        return 1;
+    }
+
+    setup.sl_addr7bit         = ACCEL_I2C_SLAVE_ADDRESS;
+    setup.retransmissions_max = MAX_ST_I2C_RETRANSMISSIONS;
+
+    result = WriteStI2CRegister(&setup, ACCEL_CTRL_REG_1_A_ADDRESS, ctrl_reg_1_a_value);
+    if(result == 1)
+        return 1;
+
+    accel_ctrl_reg_1_a_value = ctrl_reg_1_a_value;
+
+    result = WriteStI2CRegister(&setup, ACCEL_CTRL_REG_4_A_ADDRESS, ctrl_reg_4_a_value);
+    if(result == 1)
+        return 1;
+
+    return 0;
+}
+
+int _readAccel(uint8_t* args)
+{
+    uint8_t          receive_buffer[6];
+    I2C_M_SETUP_Type setup;
+    int16_t*         axis_data;
+    char*            formatted_string;
+    Status           result;
+    uint8_t          transmit_buffer;
+    uint8_t          axis_enable_bit;
+
+    setup.sl_addr7bit         = ACCEL_I2C_SLAVE_ADDRESS;
+    setup.retransmissions_max = MAX_ST_I2C_RETRANSMISSIONS;
+
+    setup.tx_data   = &transmit_buffer;
+    setup.tx_length = 1;
+    setup.rx_data   = receive_buffer;
+    setup.rx_length = 6;
+
+    transmit_buffer = ACCEL_DATA_ADDRESS|ST_I2C_AUTOINCREMENT_ADDRESS;
+
+    result = I2C_MasterTransferData(LPC_I2C0, &setup, I2C_TRANSFER_POLLING);
+    if(result == ERROR)
+        return 1;
+
+    axis_enable_bit = ACCEL_CTRL_REG_X_ENABLE;
+    axis_data       = (int16_t*)receive_buffer;
+
+    formatted_string = (char*)str;
+
+    do
+    {
+        if(accel_ctrl_reg_1_a_value&axis_enable_bit)
+        {
+            unsigned int value;
+            int          formatted_size;
+
+            value = (unsigned int)(*axis_data+ACCEL_VALUE_OFFSET);
+
+            formatted_size = sprintf(formatted_string, "%x\r\n", value);
+            if(formatted_size > 0)
+                formatted_string += formatted_size;
+        }
+
+        axis_enable_bit <<= 1;
+        axis_data++;
+    }while(axis_enable_bit <= ACCEL_CTRL_REG_Z_ENABLE);
+
+    writeUSBOutString(str);
+
+    return 0;
+}
+
+#define MAG_I2C_SLAVE_ADDRESS   0x1E
+#define MAG_CRA_REG_M_ADDRESS   0x00
+#define MAG_CRB_REG_M_ADDRESS   0x01
+#define MAG_MR_REG_M_ADDRESS    0x02
+#define MAG_DATA_ADDRESS        0x03
+
+#define MAG_CTRL_REG_OUTPUT_CHZ_75   0x00
+#define MAG_CTRL_REG_OUTPUT_CHZ_150  0x04
+#define MAG_CTRL_REG_OUTPUT_CHZ_300  0x08
+#define MAG_CTRL_REG_OUTPUT_CHZ_750  0x0C
+#define MAG_CTRL_REG_OUTPUT_CHZ_1500 0x10
+#define MAG_CTRL_REG_OUTPUT_CHZ_3000 0x14
+#define MAG_CTRL_REG_OUTPUT_CHZ_7500 0x18
+
+#define MAG_CTRL_REG_BIAS_NORMAL   0x00
+#define MAG_CTRL_REG_BIAS_POSITIVE 0x01
+#define MAG_CTRL_REG_BIAS_NEGATIVE 0x02
+
+#define MAG_CTRL_REG_FIELD_RANGE_13 0x20
+#define MAG_CTRL_REG_FIELD_RANGE_19 0x40
+#define MAG_CTRL_REG_FIELD_RANGE_25 0x60
+#define MAG_CTRL_REG_FIELD_RANGE_40 0x80
+#define MAG_CTRL_REG_FIELD_RANGE_47 0xA0
+#define MAG_CTRL_REG_FIELD_RANGE_56 0xC0
+#define MAG_CTRL_REG_FIELD_RANGE_81 0xE0
+
+#define MAG_CTRL_REG_SLEEP 0x03
+
+#define MAG_VALUE_OFFSET 4096
+
+int _configMag(uint8_t * args)
+{
+    uint32_t         arguments[4];
+    I2C_M_SETUP_Type setup;
+    char*            arg_ptr;
+    unsigned int     index;
+    Status           result;
+    uint8_t          cra_reg_m_value;
+    uint8_t          crb_reg_m_value;
+    uint8_t          mr_reg_m_value;
+
+    for(index = 0; index < 4; index++)
+    {
+        arg_ptr = strtok(NULL, " ");
+        if(arg_ptr == NULL)
+            return 1;
+
+        arguments[index] = strtoul(arg_ptr, NULL, 16);
+    }
+
+    mr_reg_m_value = 0;
+
+    if(arguments[0] != 1)
+        mr_reg_m_value |= MAG_CTRL_REG_SLEEP;
+
+    cra_reg_m_value = 0;
+
+    switch(arguments[1])
+    {
+    case 0:
+        cra_reg_m_value |= MAG_CTRL_REG_BIAS_NORMAL;
+        break;
+
+    case 1:
+        cra_reg_m_value |= MAG_CTRL_REG_BIAS_POSITIVE;
+        break;
+
+    case 2:
+        cra_reg_m_value |= MAG_CTRL_REG_BIAS_NEGATIVE;
+        break;
+
+    default:
+        return 1;
+    }
+
+    switch(arguments[2])
+    {
+    case 75:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_75;
+        break;
+
+    case 150:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_150;
+        break;
+
+    case 300:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_300;
+        break;
+
+    case 750:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_750;
+        break;
+
+    case 1500:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_1500;
+        break;
+
+    case 3000:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_3000;
+        break;
+
+    case 7500:
+        cra_reg_m_value |= MAG_CTRL_REG_OUTPUT_CHZ_7500;
+        break;
+
+    default:
+        return 1;
+    }
+
+    crb_reg_m_value = 0;
+
+    switch(arguments[3])
+    {
+    case 13:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_13;
+        break;
+
+    case 19:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_19;
+        break;
+
+    case 25:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_25;
+        break;
+
+    case 40:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_40;
+        break;
+
+    case 47:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_47;
+        break;
+
+    case 56:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_56;
+        break;
+
+    case 81:
+        crb_reg_m_value |= MAG_CTRL_REG_FIELD_RANGE_81;
+        break;
+
+    default:
+        return 1;
+    }
+
+    setup.sl_addr7bit         = MAG_I2C_SLAVE_ADDRESS;
+    setup.retransmissions_max = MAX_ST_I2C_RETRANSMISSIONS;
+
+    result = WriteStI2CRegister(&setup, MAG_MR_REG_M_ADDRESS, mr_reg_m_value);
+    if(result == 1)
+        return 1;
+
+    result = WriteStI2CRegister(&setup, MAG_CRB_REG_M_ADDRESS, crb_reg_m_value);
+    if(result == 1)
+        return 1;
+
+    result = WriteStI2CRegister(&setup, MAG_CRA_REG_M_ADDRESS, cra_reg_m_value);
+    if(result == 1)
+        return 1;
+
+    return 0;
+}
+
+static unsigned int MagDataToUInt32 (uint8_t* data)
+{
+    unsigned int unsigned_value;
+    int16_t      signed_value;
+
+    signed_value   = (int16_t)(((uint16_t)data[0]<<8)|(uint16_t)data[1]);
+    unsigned_value = (unsigned int)(signed_value+MAG_VALUE_OFFSET);
+
+    return unsigned_value;
+}
+
+int _readMag(uint8_t * args)
+{
+    uint8_t          receive_buffer[6];
+    I2C_M_SETUP_Type setup;
+    unsigned int     x_value;
+    unsigned int     y_value;
+    unsigned int     z_value;
+    Status           result;
+    uint8_t          transmit_buffer;
+
+    setup.sl_addr7bit         = MAG_I2C_SLAVE_ADDRESS;
+    setup.retransmissions_max = MAX_ST_I2C_RETRANSMISSIONS;
+
+    setup.tx_data   = &transmit_buffer;
+    setup.tx_length = 1;
+    setup.rx_data   = receive_buffer;
+    setup.rx_length = 6;
+
+    transmit_buffer = MAG_DATA_ADDRESS|ST_I2C_AUTOINCREMENT_ADDRESS;
+
+    result = I2C_MasterTransferData(LPC_I2C0, &setup, I2C_TRANSFER_POLLING);
+    if(result == ERROR)
+        return 1;
+
+    x_value = MagDataToUInt32(&receive_buffer[0]);
+    y_value = MagDataToUInt32(&receive_buffer[2]);
+    z_value = MagDataToUInt32(&receive_buffer[4]);
+
+    sprintf((char*)str, "%x\r\n%x\r\n%x\r\n", x_value, y_value, z_value);
+    writeUSBOutString(str);
+
+    return 0;
+}
+
+#define GYRO_I2C_SLAVE_ADDRESS  0x68
+#define GYRO_CTRL_REG_1_ADDRESS 0x20
+#define GYRO_CTRL_REG_3_ADDRESS 0x22
+#define GYRO_CTRL_REG_4_ADDRESS 0x23
+#define GYRO_DATA_ADDRESS       0x28
+
+#define GYRO_CTRL_REG_X_ENABLE 0x01
+#define GYRO_CTRL_REG_Y_ENABLE 0x02
+#define GYRO_CTRL_REG_Z_ENABLE 0x04
+
+#define GYRO_CTRL_REG_POWER_ON 0x08
+
+#define GYRO_CTRL_REG_OUTPUT_HZ_100 0x00
+#define GYRO_CTRL_REG_OUTPUT_HZ_200 0x40
+#define GYRO_CTRL_REG_OUTPUT_HZ_400 0x80
+#define GYRO_CTRL_REG_OUTPUT_HZ_800 0xC0
+
+#define GYRO_CTRL_REG_DATA_READY 0x08
+
+#define GYRO_CTRL_REG_SCALE_250  0x00
+#define GYRO_CTRL_REG_SCALE_500  0x10
+#define GYRO_CTRL_REG_SCALE_2000 0x20
+
+#define GYRO_CTRL_REG_BLOCK_UPDATE 0x80
+
+#define GYRO_VALUE_OFFSET 32768
+
+int _configGyro (uint8_t* args)
+{
+    uint32_t         arguments[6];
+    I2C_M_SETUP_Type setup;
+    char*            arg_ptr;
+    unsigned int     index;
+    Status           result;
+    uint8_t          ctrl_reg_1_value;
+    uint8_t          ctrl_reg_3_value;
+    uint8_t          ctrl_reg_4_value;
+
+    for(index = 0; index < 6; index++)
+    {
+        arg_ptr = strtok(NULL, " ");
+        if(arg_ptr == NULL)
+            return 1;
+
+        arguments[index] = strtoul(arg_ptr, NULL, 16);
+    }
+
+    ctrl_reg_1_value = 0;
+
+    if(arguments[0] == 1)
+        ctrl_reg_1_value |= GYRO_CTRL_REG_POWER_ON;
+
+    if(arguments[1] == 1)
+        ctrl_reg_1_value |= GYRO_CTRL_REG_X_ENABLE;
+    if(arguments[2] == 1)
+        ctrl_reg_1_value |= GYRO_CTRL_REG_Y_ENABLE;
+    if(arguments[3] == 1)
+        ctrl_reg_1_value |= GYRO_CTRL_REG_Z_ENABLE;
+
+    switch(arguments[4])
+    {
+    case 100:
+        ctrl_reg_1_value |= GYRO_CTRL_REG_OUTPUT_HZ_100;
+        break;
+
+    case 200:
+        ctrl_reg_1_value |= GYRO_CTRL_REG_OUTPUT_HZ_200;
+        break;
+
+    case 400:
+        ctrl_reg_1_value |= GYRO_CTRL_REG_OUTPUT_HZ_400;
+        break;
+
+    case 800:
+        ctrl_reg_1_value |= GYRO_CTRL_REG_OUTPUT_HZ_800;
+        break;
+
+    default:
+        return 1;
+    }
+
+    ctrl_reg_3_value = GYRO_CTRL_REG_DATA_READY;
+    ctrl_reg_4_value = GYRO_CTRL_REG_BLOCK_UPDATE;
+
+    switch(arguments[5])
+    {
+    case 250:
+        ctrl_reg_4_value |= GYRO_CTRL_REG_SCALE_250;
+        break;
+
+    case 500:
+        ctrl_reg_4_value |= GYRO_CTRL_REG_SCALE_500;
+        break;
+
+    case 2000:
+        ctrl_reg_4_value |= GYRO_CTRL_REG_SCALE_2000;
+        break;
+
+    default:
+        return 1;
+    }
+
+    setup.sl_addr7bit         = GYRO_I2C_SLAVE_ADDRESS;
+    setup.retransmissions_max = MAX_ST_I2C_RETRANSMISSIONS;
+
+    result = WriteStI2CRegister(&setup, GYRO_CTRL_REG_1_ADDRESS, ctrl_reg_1_value);
+    if(result == 1)
+        return 1;
+
+    gyro_ctrl_reg_1_value = ctrl_reg_1_value;
+
+    result = WriteStI2CRegister(&setup, GYRO_CTRL_REG_3_ADDRESS, ctrl_reg_3_value);
+    if(result == 1)
+        return 1;
+
+    result = WriteStI2CRegister(&setup, GYRO_CTRL_REG_4_ADDRESS, ctrl_reg_4_value);
+    if(result == 1)
+        return 1;
+
+    return 0;
+}
+
+int _readGyro(uint8_t * args)
+{
+    uint8_t          receive_buffer[6];
+    I2C_M_SETUP_Type setup;
+    int16_t*         axis_data;
+    char*            formatted_string;
+    Status           result;
+    uint8_t          transmit_buffer;
+    uint8_t          axis_enable_bit;
+
+    setup.sl_addr7bit         = GYRO_I2C_SLAVE_ADDRESS;
+    setup.retransmissions_max = MAX_ST_I2C_RETRANSMISSIONS;
+
+    setup.tx_data   = &transmit_buffer;
+    setup.tx_length = 1;
+    setup.rx_data   = receive_buffer;
+    setup.rx_length = 6;
+
+    transmit_buffer = GYRO_DATA_ADDRESS|ST_I2C_AUTOINCREMENT_ADDRESS;
+
+    result = I2C_MasterTransferData(LPC_I2C0, &setup, I2C_TRANSFER_POLLING);
+    if(result == ERROR)
+        return 1;
+
+    axis_enable_bit = GYRO_CTRL_REG_X_ENABLE;
+    axis_data       = (int16_t*)receive_buffer;
+
+    formatted_string = (char*)str;
+
+    do
+    {
+        if(gyro_ctrl_reg_1_value&axis_enable_bit)
+        {
+            unsigned int value;
+            int          formatted_size;
+
+            value = (unsigned int)(*axis_data+GYRO_VALUE_OFFSET);
+
+            formatted_size = sprintf(formatted_string, "%x\r\n", value);
+            if(formatted_size > 0)
+                formatted_string += formatted_size;
+        }
+
+        axis_enable_bit <<= 1;
+        axis_data++;
+    }while(axis_enable_bit <= GYRO_CTRL_REG_Z_ENABLE);
+
+    writeUSBOutString(str);
+
+    return 0;
+}
 
