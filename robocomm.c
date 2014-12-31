@@ -298,7 +298,8 @@ int main (int argc, char* argv[])
     TransmitCommand("configMag 1 0 96 19\n", serial_if);
     TransmitCommand("configGyro 1 1 1 1  64 fa\n", serial_if);
 
-    for(unsigned int data_point_count = 60; data_point_count-- > 0;)
+    //for(unsigned int data_point_count = 60; data_point_count-- > 0;)
+while(1)
     {
         double x_axis;
         double y_axis;
@@ -327,8 +328,9 @@ int main (int argc, char* argv[])
         z_axis = ((double)ReceiveULong(serial_if)-32768)/(double)(32768/0xFA);
 
         printf("Gyro:\t%.3f\t%.3f\t%.3f\n", x_axis, y_axis, z_axis);
+//printf("Gyro:\t%.3f\n", x_axis);
 
-        sleep(2);
+        usleep(100000);//100ms
     }
 
     printf("Test complete\n");
