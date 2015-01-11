@@ -1,10 +1,13 @@
 This is the source for the firmware that ships with Gumstix RoboVero expansion boards.
 
-updated with patch v1.2 from Agottem
+updated with patch v1.2 from Agottem.
+
 The sensors firmware patch allows for easy configuration and reading from the accelerometer, magnometer,
 and gyroscope on the Robovero. Without this patch, it's not possible to query the state of these sensors
 at a high frequency.
 http://www.agottem.com/robovero_sensors
+
+Add header char for readAccel, readMag, readGyro, for launch with robocommViewer App.
 
 Contents
 ========
