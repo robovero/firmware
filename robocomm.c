@@ -202,6 +202,75 @@ static inline unsigned long ReceiveULong (int serial_if)
     return received_value;
 }
 
+/*
+   Receive a char value from the robovero.  The char is a header for
+   Accel, Mag, and Gyro.
+
+   The data format expected is:
+       X\r\n
+
+   The \r is actually ignored, so it's optional, but the serial port was
+   opened with out any new-line translation and untranslated robovero
+   responses will always have a \r before the \n.
+
+   Where X is a char.  'A' 'M' 'G' is valid.
+ */
+static inline unsigned char ReceiveHeader (int serial_if)
+{
+    struct pollfd poll_data;
+    unsigned char header;
+    int           signaled_count;
+
+    poll_data.fd     = serial_if;
+    poll_data.events = POLLIN;
+
+    signaled_count = poll(&poll_data, 1, 1000);
+    if(signaled_count == 0)
+    {
+        printf("It has taken an unreasonable amount of time to receive data\n");
+
+        exit(-1);
+    }
+
+    header = 'X';
+
+    while(1)
+    {
+        int  read_size;
+        char read_value;
+
+        read_size = read(serial_if, &read_value, 1);
+        if(read_size == -1)
+        {
+            printf("Error reading from serial port\n");
+
+            exit(-1);
+        }
+        else if(read_size == 0)
+        {
+            WaitForReception(1);
+
+            continue;
+        }
+
+        if(read_value == 'A')
+            header = read_value;
+        else if(read_value == 'M')
+            header = read_value;
+        else if(read_value == 'G')
+            header = read_value;
+        else if(read_value == '\n')
+            break;
+        else if(read_value != '\r')
+        {
+            printf("Unexpected data received\n");
+
+            exit(-1);
+        }
+    }
+
+    return header;
+}
 
 int main (int argc, char* argv[])
 {
@@ -304,30 +373,34 @@ while(1)
         double x_axis;
         double y_axis;
         double z_axis;
+        unsigned char header;
 
         TransmitCommand("readAccel\n", serial_if);
 
+        header = ReceiveHeader(serial_if);
         x_axis = ((double)ReceiveULong(serial_if)-32768.0)/(double)(32768/4);
         y_axis = ((double)ReceiveULong(serial_if)-32768.0)/(double)(32768/4);
         z_axis = ((double)ReceiveULong(serial_if)-32768.0)/(double)(32768/4);
 
-        printf("Accel:\t%.3f\t%.3f\t%.3f\n", x_axis, y_axis, z_axis);
+        printf("Accel:%c\t%.3f\t%.3f\t%.3f\n",header, x_axis, y_axis, z_axis);
 
         TransmitCommand("readMag\n", serial_if);
 
+        header = ReceiveHeader(serial_if);
         x_axis = ((double)ReceiveULong(serial_if)-4096)/(double)(4096/0x19);
         y_axis = ((double)ReceiveULong(serial_if)-4096)/(double)(4096/0x19);
         z_axis = ((double)ReceiveULong(serial_if)-4096)/(double)(4096/0x19);
 
-        printf("Mag:\t%.3f\t%.3f\t%.3f\n", x_axis, y_axis, z_axis);
+        printf("Mag:%c\t%.3f\t%.3f\t%.3f\n",header, x_axis, y_axis, z_axis);
 
         TransmitCommand("readGyro\n", serial_if);
 
+        header = ReceiveHeader(serial_if);
         x_axis = ((double)ReceiveULong(serial_if)-32768)/(double)(32768/0xFA);
         y_axis = ((double)ReceiveULong(serial_if)-32768)/(double)(32768/0xFA);
         z_axis = ((double)ReceiveULong(serial_if)-32768)/(double)(32768/0xFA);
 
-        printf("Gyro:\t%.3f\t%.3f\t%.3f\n", x_axis, y_axis, z_axis);
+        printf("Gyro:%c\t%.3f\t%.3f\t%.3f\n",header, x_axis, y_axis, z_axis);
 
         usleep(100000);//100ms
     }
