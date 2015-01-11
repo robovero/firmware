@@ -647,6 +647,11 @@ int _readAccel(uint8_t* args)
 
     formatted_string = (char*)str;
 
+    //header for robocommViewer
+    char entete = 'A';
+    sprintf(formatted_string, "%c\r\n", entete);
+    formatted_string +=3;
+    //end header
     do
     {
         if(accel_ctrl_reg_1_a_value&axis_enable_bit)
@@ -872,7 +877,8 @@ int _readMag(uint8_t * args)
     y_value = MagDataToUInt32(&receive_buffer[2]);
     z_value = MagDataToUInt32(&receive_buffer[4]);
 
-    sprintf((char*)str, "%x\r\n%x\r\n%x\r\n", x_value, y_value, z_value);
+    //add Header 'M\r\n' for robocommVieWer
+    sprintf((char*)str, "M\r\n%x\r\n%x\r\n%x\r\n", x_value, y_value, z_value);
     writeUSBOutString(str);
 
     return 0;
@@ -1029,6 +1035,11 @@ int _readGyro(uint8_t * args)
 
     formatted_string = (char*)str;
 
+    //header for robocommViewer
+    char entete = 'G';
+    sprintf(formatted_string, "%c\r\n", entete);
+    formatted_string +=3;
+    //end header
     do
     {
         if(gyro_ctrl_reg_1_value&axis_enable_bit)
