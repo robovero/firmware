@@ -328,7 +328,6 @@ while(1)
         z_axis = ((double)ReceiveULong(serial_if)-32768)/(double)(32768/0xFA);
 
         printf("Gyro:\t%.3f\t%.3f\t%.3f\n", x_axis, y_axis, z_axis);
-//printf("Gyro:\t%.3f\n", x_axis);
 
         usleep(100000);//100ms
     }
