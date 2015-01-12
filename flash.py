@@ -29,7 +29,7 @@ if subprocess.call(sudo_cmd):
 
 
 print "starting openocd:",
-openocd_cmd = ("sudo %sopenocd -f interface/openocd-usb.cfg -f target/lpc1769.cfg" % config["OPENOCD_PATH"]).split()
+openocd_cmd = ("sudo %sopenocd -f interface/ftdi/openocd-usb.cfg -f target/lpc1769.cfg" % config["OPENOCD_PATH"]).split()
 openocd = subprocess.Popen(openocd_cmd, stdout=debug, stderr=debug)
 time.sleep(1)
 openocd.poll()
